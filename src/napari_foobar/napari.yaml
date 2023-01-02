@@ -1,0 +1,10 @@
+name: napari-foobar
+schema_version: 0.1.0
+contributions:
+  commands:
+    - id: napari-foobar.widget_wrapper
+      title: Create cellpose
+      python_name: napari_foobar._widget:widget_wrapper
+  widgets:
+    - command: napari-foobar.widget_wrapper
+      display_name: cellpose
