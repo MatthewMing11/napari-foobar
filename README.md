@@ -27,7 +27,17 @@ You can install `napari-foobar` via [pip]:
 
     pip install napari-foobar
 
+Before installing the plugin, make sure to create an environment, either in conda or mamba.
+If don't have mamba installed, replace mamba by conda.
+    
+    mamba create -n napari-plugin-env python=3.9 napari jupyterlab -c conda-forge
+    mamba activate napari-plugin-env
 
+## Potential issue with PyTorch
+
+Cellpose and therefore the plugin and napari can crash without warning in some cases with torch==1.12.0. This can be fixed by reverting to an earlier version using:
+
+    pip install torch==1.11.0
 
 
 ## Contributing
