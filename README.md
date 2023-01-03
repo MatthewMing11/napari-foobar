@@ -28,7 +28,7 @@ You can install `napari-foobar` via [pip]:
     pip install napari-foobar
 
 Before installing the plugin, make sure to create an environment, either in conda or mamba.
-If don't have mamba installed, replace mamba by conda.
+If you don't have mamba installed, replace mamba by conda.
     
     mamba create -n napari-plugin-env python=3.9 napari jupyterlab -c conda-forge
     mamba activate napari-plugin-env
