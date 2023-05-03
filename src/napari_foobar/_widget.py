@@ -231,7 +231,15 @@ def widget_wrapper():
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
         widget.erode_count = 0
         return labels
-    
+    @thread_worker
+    def next(labels):
+        labels=np.where(labels!=widget.labeled_cells[0],labels,0)
+        widget.labeled_cells.pop(0)
+        widget.label_layer.value.selected_label=widget.labeled_cells[0]
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
+        widget.erode_count = 0
+        return labels
     @thread_worker 
     def compute_masks(masks_orig, flows_orig):
         import cv2
@@ -264,6 +272,7 @@ def widget_wrapper():
         erode_button = dict(widget_type='PushButton', text='erode cells from image', tooltip='Erode cells from image using specified channels'),
         watershed_button = dict(widget_type='PushButton', text='watershed cells from image', tooltip='Watershed cells from image using specified channels'),
         delete_button = dict(widget_type='PushButton', text='delete cells from image', tooltip='Remove cells from image using specified channels'),
+        next_button = dict(widget_type='PushButton', text='next cell to relabel', tooltip='Moves to next cell'),
     )
     #THE WIDGET/PLUGIN
     def widget(#label_logo, 
@@ -282,6 +291,7 @@ def widget_wrapper():
         erode_button,
         watershed_button,
         delete_button,
+        next_button,
     ) -> None:
         # Import when users activate plugin
 
@@ -482,8 +492,14 @@ def widget_wrapper():
         delete_worker = delete(image)
         delete_worker.returned.connect(update_labels)
         delete_worker.start()   
-    return widget  
 
+    @widget.next_button.changed.connect
+    def _next(e:Any):
+        image = widget.label_layer.value.data
+        next_worker = next(image)
+        next_worker.returned.connect(update_labels)
+        next_worker.start()   
+    return widget  
 
 @napari_hook_implementation
 def napari_experimental_provide_dock_widget():

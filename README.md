@@ -37,6 +37,60 @@ If you don't have mamba installed, replace mamba by conda.
     mamba create -n napari-plugin-env python=3.9 napari jupyterlab -c conda-forge
     mamba activate napari-plugin-env
 
+## Components
+
+### image_layer
+
+Requires a valid image layer to use cellpose features. Not required if not doing segmentation.
+
+### label_layer
+
+Requires a valid label layer to use relabeling features. Not required if not doing relabeling.
+
+### diameter
+
+The length that will be used to approximate and segment cells.
+
+### anisotropy
+
+The amount of deformity on z compared to x and y on voxels used.
+
+### min size
+
+The lower limit of cells allowed to be segmented. Anything lower is excluded from segmentation.
+
+### process stack as 3D
+
+Enable if using 3D stack otherwise disable.
+
+### clear previous results
+
+Enable if newer cellpose results should replace old results.
+
+### delete edge cells from image
+
+Click to remove all cells on the border.
+
+### isolate cells from image
+
+When starting to relabel, click this to setup as well as isolate the largest cell.
+
+### erode cells from image
+
+Erodes selected cell.
+
+### watershed cells from image.
+
+Watersheds selected cell.
+
+### delete cells from image
+
+Deletes selected cell and moves to next cell on the list.
+
+### run segmentation
+
+Runs cellpose on image given on image_layer.
+
 ## Potential issue with PyTorch
 
 Cellpose and therefore the plugin and napari can crash without warning in some cases with torch==1.12.0. This can be fixed by reverting to an earlier version using:
