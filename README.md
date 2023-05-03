@@ -27,6 +27,10 @@ You can install `napari-foobar` via [pip]:
 
     pip install napari-foobar
 
+To install latest development version :
+
+    pip install git+https://github.com/MatthewMing11/napari-foobar
+
 Before installing the plugin, make sure to create an environment, either in conda or mamba.
 If you don't have mamba installed, replace mamba by conda.
     
