@@ -156,9 +156,7 @@ def widget_wrapper():
         widget.label_layer.value.show_selected_label=True
         return blank.astype(labels.dtype)
     @thread_worker
-    def erode(labels):#eroded layer should only show centroid, eroded cells can be for debugging
-        #make centroids change with erode, it does similar labeling to watershed but only shows the points
-        #need to work more on fixing this
+    def erode(labels):
         import cv2 as cv
         from skimage import (
         measure,segmentation,
@@ -190,7 +188,8 @@ def widget_wrapper():
                 for j in range(-1,2):
                     for k in range(-1,2):
                         blank[x+i,y+j,z+k]=key
-        # widget.erode_count += 1
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_"+str(widget.erode_count+1)
+        widget.erode_count += 1
         all_centers=widget.viewer.value.layers["centroids"].data
         other_centers=np.where(all_centers==widget.labeled_cells[0],0,all_centers)
         blank=np.where(blank!=0,widget.labeled_cells[0],blank)
@@ -209,12 +208,7 @@ def widget_wrapper():
 
         label_isolated=np.where(labels==widget.labeled_cells[0],labels,0)
         other_labels=np.where(labels!=widget.labeled_cells[0],labels,0)
-        # mask=label_isolated > 0
-        # markers,num=measure.label(mask,return_num=True)
         cell_max=max(widget.labeled_cells)
-        # print(num)
-        # markers=markers+cell_max
-        # markers=np.where(markers==cell_max+num,markers,widget.labeled_cells[0])
         dist = ndi.distance_transform_edt(label_isolated) #make distance map
         coords = peak_local_max(dist, labels=label_isolated)
         mask = np.zeros(dist.shape, dtype=bool)
@@ -225,7 +219,8 @@ def widget_wrapper():
         print(output+other_labels)
         output=np.where(output==0,0,output+cell_max)+other_labels
         isolate(output)
-        # widget.erode_count = 0
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
+        widget.erode_count = 0
         return output
     @thread_worker
     def delete(labels):
@@ -233,7 +228,10 @@ def widget_wrapper():
         widget.labeled_cells.pop(0)
         widget.label_layer.value.selected_label=widget.labeled_cells[0]
         widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
+        widget.erode_count = 0
         return labels
+    
     @thread_worker 
     def compute_masks(masks_orig, flows_orig):
         import cv2
@@ -291,8 +289,8 @@ def widget_wrapper():
             widget.cellpose_layers = []
         if not hasattr(widget, 'labeled_cells'):
             widget.labeled_cells = []
-        # if not hasattr(widget, 'erode_count'):
-        #     widget.erode_count = 0
+        if not hasattr(widget, 'erode_count'):
+            widget.erode_count = 0
         if clear_previous_segmentations:
             layer_names = [layer.name for layer in viewer.layers]
             for layer_name in layer_names:
@@ -400,17 +398,23 @@ def widget_wrapper():
         widget.masks_orig = masks
         logger.debug('masks updated')
 
-    # I wrote these function
-    def update_layer(masks):#breaks here when watershed
+    # I wrote these functions
+    def update_layer(masks):
+        """Updates the image layer, meant to be used for cellpose functions"""
         widget.viewer.value.layers[widget.image_layer.value.name].data = masks
         # layers=[]
         # layers.append(widget.viewer.add_labels(masks, name=widget.image_layer.name + '_delete' + widget.iseg, visible=False))
         # widget.cellpose_layers.append(layers)
-    def update_labels(masks):#updates the label layer
+
+    def update_labels(masks):
+        """Updates the label layer"""
         widget.viewer.value.layers[widget.label_layer.value.name].data = masks
-    def update_centers(masks):#changes the centroid layer and the invisible erosion layer
-        widget.viewer.value.layers["erosion"].data = masks[0]
+    
+    def update_centers(masks):
+        """Updates the centroid layer and the invisible erosion layer"""
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].data = masks[0]
         widget.viewer.value.layers["centroids"].data=masks[1]
+
     #MULTITHREADING FUNCTIONS for respective buttons in GUI
     @widget.compute_masks_button.changed.connect 
     def _compute_masks(e: Any):
@@ -434,6 +438,7 @@ def widget_wrapper():
         diam_worker = compute_diameter(image, channels, model_type)
         diam_worker.returned.connect(_report_diameter)
         diam_worker.start()
+
     # I wrote these functions
     @widget.delete_edge_button.changed.connect
     def _delete_edge(e:Any):
@@ -445,22 +450,24 @@ def widget_wrapper():
     @widget.isolate_button.changed.connect
     def _isolate(e:Any):
         image = widget.label_layer.value.data
+        if not hasattr(widget, 'erode_count'):#it wasn't working on plugin startup so i'll just put it here and it works
+            widget.erode_count = 0
         centers=isolate(image)#the only one without a worker because i need the cells to be labeled first
         widget.viewer.value.add_labels(centers,name="centroids",blending="additive")
-        widget.viewer.value.add_labels(image,name="erosion")#this is the erosion layer
+        widget.viewer.value.add_labels(image,name="erosion_"+str(widget.erode_count))#this is the erosion layer
         widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
         widget.viewer.value.layers["centroids"].show_selected_label=True
-        widget.viewer.value.layers["erosion"].visible = False
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].visible = False
         
     @widget.erode_button.changed.connect
     def _erode(e:Any):
-        image = widget.viewer.value.layers["erosion"].data
+        image = widget.viewer.value.layers["erosion_"+str(widget.erode_count)].data
         erode_worker = erode(image)
         erode_worker.returned.connect(update_centers)
         erode_worker.start()
            
     @widget.watershed_button.changed.connect
-    def _watershed(e:Any):
+    def _watershed(e:Any):#also is not multithreaded lik
         image = widget.label_layer.value.data
         # watershed_worker = watershed(image)
         update_labels(watershed(image))
@@ -468,6 +475,7 @@ def widget_wrapper():
         widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
         # watershed_worker.returned.connect(update_labels)
         # watershed_worker.start()   
+
     @widget.delete_button.changed.connect
     def _delete(e:Any):
         image = widget.label_layer.value.data
