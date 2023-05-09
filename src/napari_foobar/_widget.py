@@ -25,16 +25,12 @@ if '--verbose' in sys.argv or '-v' in sys.argv:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.WARNING)
+
 #filtering functions for cell analysis
 def getCells(labels):
         """Runs the main program"""
-        #read data from file
         data = labels
-        #number of frames is 100
-        #number of x-axis coordinates is 226
-        #number of y-axis coordinates is 242
-        shape = data.shape
-        #shape is in [z,y,x] form
+        shape = data.shape #shape is in [z,y,x] form
 
         # get data points("cell_ids") from data 
         cell_ids = dict()
@@ -45,19 +41,21 @@ def getCells(labels):
                     if cell_id:     #first checks if value is valid to put into cell_ids(0 is empty space)
                         if cell_id not in cell_ids:     #if cell_id isn't in cell_ids, instantiate empty list
                             cell_ids.setdefault(cell_id,[])
-                        cell_ids[cell_id].append([x,y,z])
+                        cell_ids[cell_id].append([x,y,z]) #append data point to the cell_id list
         return cell_ids
+
 def generate_volume(cell_ids):
-        """Return number of pixels("volume") each cell_id is made of
-            and multiply it by pixel dimensions to get cell volume"""
+        """Return number of pixels("volume") each cell_id is made of to get cell volume"""
         volumes=dict()
         for key in cell_ids.keys():
             volumes[key]=len(cell_ids[key])
         return volumes
+
 def getTop(cell_ids):
     sizes=generate_volume(cell_ids)
     listofsizes=list(reversed(sorted(sizes,key=sizes.get)))
     return listofsizes
+
 def generate_centers(cell_ids):
     """Return centers(heavily relies on distribution of points) of each cell_id"""
     centers=dict()
@@ -65,6 +63,210 @@ def generate_centers(cell_ids):
         centers[key]=[round(sum(col)/len(cell_ids[key])) for col in zip(*cell_ids[key])]
     return centers
 #filter functions end here
+
+#merge functions start here
+def mergeCells(labels):
+    import cv2 as cv
+    orig=labels
+    # array=np.copy(orig)
+    # array=[]
+    im2=np.copy(orig)
+    for index in range(len(orig)): #go through all slices
+        print("Index")
+        print(index)
+        print(f'dtype: {orig.dtype}, shape: {orig.shape}, min: {np.min(orig)}, max: {np.max(orig)}')#check contents of file(not metadata)
+        # print(orig[0,:,:].shape)
+        # slice=orig[130,:,:]#take 130th slice of the image(testing purposes)
+        slice=im2[index,:,:]
+        prevslice=np.array([])
+        nextslice=np.array([])
+        if index:
+            prevslice=im2[index-1,:,:]
+        if index+1!=len(orig):
+            nextslice=im2[index+1,:,:]
+        im= np.uint8(slice)#conversion because i need to get the sobel gradient to get contours
+        
+        # compute the 1st order Sobel derivative in X-direction
+        sobelx = cv.Sobel(im,cv.CV_64F,1,0,ksize=3)
+        # compute the 1st order Sobel derivative in Y-direction
+        sobely = cv.Sobel(im,cv.CV_64F,0,1,ksize=3)
+        #computes gradient given the Sobel derivatives
+        grad=np.sqrt(np.square(sobelx)+np.square(sobely))
+        grad=grad.astype('uint8')
+        h, w = im.shape[:2]
+        contours, hierarchy = cv.findContours(grad, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)#get contours of gradient(helps grab all inner contours)
+        # I am taking only those contours which do not have a child contour.
+        # finalContours = np.asarray([contours[i] for i in range(len(contours)) if hierarchy[0][i][2] == -1])
+        # Iterating over each pixel except those at the boundary
+        contours=np.asarray(contours).tolist()
+        listofContours=[]
+        #Remake im with only inner contours in new variable edges. Record this list of contours for visualization later.
+        edge = np.zeros(im.shape, dtype = np.uint8)
+        for i in contours:
+            row=[]
+            for j in i:
+                for k in j:
+                    arr=k.tolist()
+                    x=arr[0]
+                    y=arr[1]
+                    if x>0 and x<h and y>1 and y<w:# check if within bounds of image
+                        roi = slice[y-1:y+2, x-1:x+2].copy()
+                        roi2=np.array([])
+                        roi3=np.array([])
+                        if np.any(prevslice):
+                            roi2 = prevslice[y-1:y+2, x-1:x+2].copy()
+                        if np.any(nextslice):
+                            roi3 = nextslice[y-1:y+2, x-1:x+2].copy()
+                        roi[1,1]=0
+                        # print("ROI HERE")
+                        # print(roi)
+                        unique_neighbors=set(np.concatenate((roi.flatten(),roi2.flatten(),roi3.flatten())))
+                        # print(unique_neighbors)
+                        #keep all non-zero values
+                        if 0 in unique_neighbors:
+                            unique_neighbors.remove(0)
+                        # if contour pixel only borders one cell(itself), remove it
+                        # print(unique_neighbors)
+                        if len(unique_neighbors)>1:
+                            row.append([arr])
+                            edge[y][x] = 255
+            if len(row)!=0:
+                row=np.asarray(row,dtype=np.int32)
+                listofContours.append(row)
+
+        # # listofContours=np.array(listofContours)
+        # # listofContours = listofContours.astype('int32')
+        print(listofContours)
+        # #need to make list of Contours look like contours
+        # # so far the numpy appending is messing up everything, need to figure out why
+        print("Real")
+        print(contours)
+        print(grad)
+        #Go through all contours in list and merge neighboring cells.
+        # im2=np.copy(slice)
+        for i in listofContours:
+            for j in i:
+                for k in j:
+                    arr=k.tolist()
+                    x=arr[0]
+                    y=arr[1]
+                    roi = slice[y-1:y+2, x-1:x+2].copy()
+                    roi2=np.array([])
+                    roi3=np.array([])
+                    if np.any(prevslice):
+                        roi2 = prevslice[y-1:y+2, x-1:x+2].copy()
+                    if np.any(nextslice):
+                        roi3 = nextslice[y-1:y+2, x-1:x+2].copy()
+                    roi[1,1]=0
+                    # print(roi)
+                    unique_neighbors=set(np.concatenate((roi.flatten(),roi2.flatten(),roi3.flatten())))
+                    # print(unique_neighbors)
+                    #keep all non-zero values
+                    if 0 in unique_neighbors:
+                        unique_neighbors.remove(0)
+                    if len(unique_neighbors)>1:
+                        unique_neighbors=list(unique_neighbors)
+                        replace=unique_neighbors[0]
+                        for unique_neighbor in unique_neighbors[1:]:
+                            if unique_neighbor in im2:#hopefully this speeds up computation
+                                print("Executed")
+                                im2=np.where(im2==unique_neighbor,replace,im2)
+                                print("Done")
+    return im2
+# Python3 implementation of the approach
+ 
+# Function that returns true if
+# the given pixel is valid
+def isValid(screen, m, n, x, y, prevC, newC):
+    if x<0 or x>= m\
+       or y<0 or y>= n or\
+       screen[x][y]!= prevC\
+       or screen[x][y]== newC:
+        return False
+    return True
+ 
+ 
+# FloodFill function
+def floodFill(screen, 
+            m, n, x, 
+            y, prevC, newC):
+    queue = []
+     
+    # Append the position of starting
+    # pixel of the component
+    queue.append([x, y])
+ 
+    # Color the pixel with the new color
+    screen[x][y] = newC
+ 
+    # While the queue is not empty i.e. the
+    # whole component having prevC color
+    # is not colored with newC color
+    while queue:
+         
+        # Dequeue the front node
+        currPixel = queue.pop()
+         
+        posX = currPixel[0]
+        posY = currPixel[1]
+         
+        # Check if the adjacent
+        # pixels are valid
+        if isValid(screen, m, n, 
+                posX + 1, posY, 
+                        prevC, newC):
+             
+            # Color with newC
+            # if valid and enqueue
+            screen[posX + 1][posY] = newC
+            queue.append([posX + 1, posY])
+         
+        if isValid(screen, m, n, 
+                    posX-1, posY, 
+                        prevC, newC):
+            screen[posX-1][posY]= newC
+            queue.append([posX-1, posY])
+         
+        if isValid(screen, m, n, 
+                posX, posY + 1, 
+                        prevC, newC):
+            screen[posX][posY + 1]= newC
+            queue.append([posX, posY + 1])
+         
+        if isValid(screen, m, n, 
+                    posX, posY-1, 
+                        prevC, newC):
+            screen[posX][posY-1]= newC
+            queue.append([posX, posY-1])
+
+# Adapted from  Binary fill algorithm by Gabriel Landini, G.Landini at bham.ac.uk in ImageJ
+def fill_holes(labels):
+    from skimage import (
+        color, data, filters, measure,
+        morphology, segmentation, util
+        )
+    im=labels
+    im2=np.copy(im)
+    h, w = im2.shape[1:]
+    for index in range(len(im2)):
+        print(index)
+        for i in range(h):
+            if im2[index][0,i]==0: floodFill(im2[index],w,h,0,i,0,127)
+            if im2[index][w-1,i]==0: floodFill(im2[index],w,h,w-1,i,0,127)
+        for i in range(w):
+            if im2[index][i,0]==0: floodFill(im2[index],w,h,i,0,0,127)
+            if im2[index][i,h-1]==0: floodFill(im2[index],w,h,i,h-1,0,127)
+        n=h*w
+        for i in range(n):
+            print(i/w)
+            if im2[index][int(i/w)][i%w]==127:
+                im2[index][int(i/w)][i%w]=0
+            else:
+                im2[index][int(i/w)][i%w]=255
+    binary_im2=im2
+    im2 = segmentation.watershed(binary_im2, im, mask=binary_im2)
+    return im2
+#merge functions end here
 
 #@thread_worker
 def read_logging(log_file, logwindow):
@@ -124,6 +326,9 @@ def widget_wrapper():
                       flows_orig[3][:,i]] for i in range(masks.shape[0])]
             masks = list(masks)
             flows_orig = flows
+        ## added here because i don't want to change too much of the original code
+        masks=mergeCells(masks)
+        masks=fill_holes(masks)
         return masks, flows_orig
 
     @thread_worker
@@ -137,16 +342,21 @@ def widget_wrapper():
         return diam
     @thread_worker
     def delete_edge(labels):
+        """Return labels with cells on the border removed"""
         return clear_border(labels)
+    
     # @thread_worker
     def isolate(labels):
+        """Isolates all cells so that only one may appear on screen.
+            The largest cell is displayed first.
+            Press the isolate button on startup of plugin."""
         cells=getCells(labels)
         ordered=getTop(cells)
         centers=generate_centers(cells)
         blank=np.zeros(labels.shape)
         for key, value in centers.items():
             z,y,x=value
-            for i in range(-1,2):#not sure if this is slow or not
+            for i in range(-1,2):
                 for j in range(-1,2):
                     for k in range(-1,2):
                         blank[x+i,y+j,z+k]=key
@@ -155,8 +365,11 @@ def widget_wrapper():
         widget.label_layer.value.selected_label=widget.labeled_cells[0]
         widget.label_layer.value.show_selected_label=True
         return blank.astype(labels.dtype)
+    
     @thread_worker
     def erode(labels):
+        """Applies erosion to current cell on the screen. 
+        A counter on the erosion layer shows how many times erosion has been done."""
         import cv2 as cv
         from skimage import (
         measure,segmentation,
@@ -166,9 +379,9 @@ def widget_wrapper():
         from skimage.feature import peak_local_max
 
         kernel = np.ones((3, 3), np.uint8)
-        label_isolated=np.where(labels==widget.labeled_cells[0],labels,0)
+        label_isolated=np.where(labels==widget.labeled_cells[widget.current_index],labels,0)
         labels_eroded=cv.erode(np.float32(label_isolated),kernel,iterations=1)
-        other_labels=np.where(labels!=widget.labeled_cells[0],labels,0)
+        other_labels=np.where(labels!=widget.labeled_cells[widget.current_index],labels,0)
         dist = ndi.distance_transform_edt(labels_eroded) #make distance map
         coords = peak_local_max(dist,footprint=np.ones((50, 50,50)), labels=labels_eroded.astype('int64'))
         mask = np.zeros(dist.shape, dtype=bool)
@@ -191,23 +404,24 @@ def widget_wrapper():
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_"+str(widget.erode_count+1)
         widget.erode_count += 1
         all_centers=widget.viewer.value.layers["centroids"].data
-        other_centers=np.where(all_centers==widget.labeled_cells[0],0,all_centers)
-        blank=np.where(blank!=0,widget.labeled_cells[0],blank)
+        other_centers=np.where(all_centers==widget.labeled_cells[widget.current_index],0,all_centers)
+        blank=np.where(blank!=0,widget.labeled_cells[widget.current_index],blank)
         blank=blank+other_centers
         print("Erosion done")
         return (labels_eroded+other_labels).astype(labels.dtype),blank.astype(labels.dtype)
 
     # @thread_worker
     def watershed(labels):
+        """Applies watershed to current cell on screen. Once applied, moves to the next largest cell."""
         from skimage import (
         measure,segmentation,
         )
         import tifffile as tiff
         from scipy import ndimage as ndi
         from skimage.feature import peak_local_max
-
-        label_isolated=np.where(labels==widget.labeled_cells[0],labels,0)
-        other_labels=np.where(labels!=widget.labeled_cells[0],labels,0)
+        """Takes a labeled image and finds peaks. Using these peaks, it """
+        label_isolated=np.where(labels==widget.labeled_cells[widget.current_index],labels,0)
+        other_labels=np.where(labels!=widget.labeled_cells[widget.current_index],labels,0)
         cell_max=max(widget.labeled_cells)
         dist = ndi.distance_transform_edt(label_isolated) #make distance map
         coords = peak_local_max(dist, labels=label_isolated)
@@ -224,21 +438,36 @@ def widget_wrapper():
         return output
     @thread_worker
     def delete(labels):
-        labels=np.where(labels!=widget.labeled_cells[0],labels,0)
-        widget.labeled_cells.pop(0)
-        widget.label_layer.value.selected_label=widget.labeled_cells[0]
-        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
+        """Deletes the current cell on screen and moves to the next largest cell"""
+        labels=np.where(labels!=widget.labeled_cells[widget.current_index],labels,0)
+        widget.labeled_cells.pop(widget.current_index)
+        widget.label_layer.value.selected_label=widget.labeled_cells[widget.current_index]
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
         widget.erode_count = 0
+        print(widget.labeled_cells)
         return labels
     @thread_worker
     def next(labels):
-        labels=np.where(labels!=widget.labeled_cells[0],labels,0)
-        widget.labeled_cells.pop(0)
-        widget.label_layer.value.selected_label=widget.labeled_cells[0]
-        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
+        """Moves to the next largest cell"""
+        if  widget.current_index !=len(widget.labeled_cells)-1:
+            widget.current_index += 1
+        widget.label_layer.value.selected_label=widget.labeled_cells[widget.current_index]
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
         widget.erode_count = 0
+        print(widget.labeled_cells)
+        return labels
+    @thread_worker
+    def prev(labels):
+        """Moves to the previous largest cell"""
+        if not widget.current_index:
+            widget.current_index -= 1
+        widget.label_layer.value.selected_label=widget.labeled_cells[widget.current_index]
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
+        widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
+        widget.erode_count = 0
+        print(widget.labeled_cells)
         return labels
     @thread_worker 
     def compute_masks(masks_orig, flows_orig):
@@ -265,13 +494,14 @@ def widget_wrapper():
         anisotropy = dict(widget_type='FloatSlider', name='anisotropy', value=1.0, min=1.0, max=10.0, step=0.2, tooltip='resolution ratio between z res to xy res'),
         min_size = dict(widget_type='Slider', name='min_size', value=15, min=15, max=1000, step=1, tooltip='minimum cell size threshold for cellpose'),
         compute_masks_button  = dict(widget_type='PushButton', text='recompute last masks with new cellprob + model match', enabled=False),
-        process_3D = dict(widget_type='CheckBox', text='process stack as 3D', value=False, tooltip='use default 3D processing where flows in X, Y, and Z are computed and dynamics run in 3D to create masks'),
+        process_3D = dict(widget_type='CheckBox', text='process stack as 3D', value=True, tooltip='use default 3D processing where flows in X, Y, and Z are computed and dynamics run in 3D to create masks'),
         clear_previous_segmentations = dict(widget_type='CheckBox', text='clear previous results', value=True),
         delete_edge_button = dict(widget_type='PushButton', text='delete edge cells from image', tooltip='Remove edge cells from image using specified channels'),
         isolate_button = dict(widget_type='PushButton', text='isolate cells from image', tooltip='Isolate cells from image using specified channels'),
         erode_button = dict(widget_type='PushButton', text='erode cells from image', tooltip='Erode cells from image using specified channels'),
         watershed_button = dict(widget_type='PushButton', text='watershed cells from image', tooltip='Watershed cells from image using specified channels'),
         delete_button = dict(widget_type='PushButton', text='delete cells from image', tooltip='Remove cells from image using specified channels'),
+        prev_button = dict(widget_type='PushButton', text='prev cell to relabel', tooltip='Moves to previous cell'),
         next_button = dict(widget_type='PushButton', text='next cell to relabel', tooltip='Moves to next cell'),
     )
     #THE WIDGET/PLUGIN
@@ -291,16 +521,19 @@ def widget_wrapper():
         erode_button,
         watershed_button,
         delete_button,
+        prev_button,
         next_button,
     ) -> None:
         # Import when users activate plugin
-
+        #these variables don't exist in the plugin so make them exist
         if not hasattr(widget, 'cellpose_layers'):
             widget.cellpose_layers = []
         if not hasattr(widget, 'labeled_cells'):
             widget.labeled_cells = []
         if not hasattr(widget, 'erode_count'):
             widget.erode_count = 0
+        if not hasattr(widget, 'current_index'):
+            widget.current_index = 0
         if clear_previous_segmentations:
             layer_names = [layer.name for layer in viewer.layers]
             for layer_name in layer_names:
@@ -449,7 +682,7 @@ def widget_wrapper():
         diam_worker.returned.connect(_report_diameter)
         diam_worker.start()
 
-    # I wrote these functions
+    # I wrote these functions, they connect the functions to the respective buttons
     @widget.delete_edge_button.changed.connect
     def _delete_edge(e:Any):
         image = widget.image_layer.value.data
@@ -462,6 +695,8 @@ def widget_wrapper():
         image = widget.label_layer.value.data
         if not hasattr(widget, 'erode_count'):#it wasn't working on plugin startup so i'll just put it here and it works
             widget.erode_count = 0
+        if not hasattr(widget, 'current_index'):
+            widget.current_index = 0
         centers=isolate(image)#the only one without a worker because i need the cells to be labeled first
         widget.viewer.value.add_labels(centers,name="centroids",blending="additive")
         widget.viewer.value.add_labels(image,name="erosion_"+str(widget.erode_count))#this is the erosion layer
@@ -477,12 +712,12 @@ def widget_wrapper():
         erode_worker.start()
            
     @widget.watershed_button.changed.connect
-    def _watershed(e:Any):#also is not multithreaded lik
+    def _watershed(e:Any):#also is not multithreaded like _isolate
         image = widget.label_layer.value.data
         # watershed_worker = watershed(image)
         update_labels(watershed(image))
-        widget.label_layer.value.selected_label=widget.labeled_cells[0]
-        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
+        widget.label_layer.value.selected_label=widget.labeled_cells[widget.current_index]
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
         # watershed_worker.returned.connect(update_labels)
         # watershed_worker.start()   
 
@@ -493,6 +728,13 @@ def widget_wrapper():
         delete_worker.returned.connect(update_labels)
         delete_worker.start()   
 
+    @widget.next_button.changed.connect
+    def _prev(e:Any):
+        image = widget.label_layer.value.data
+        prev_worker = prev(image)
+        prev_worker.returned.connect(update_labels)
+        prev_worker.start()   
+    
     @widget.next_button.changed.connect
     def _next(e:Any):
         image = widget.label_layer.value.data
