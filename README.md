@@ -98,6 +98,11 @@ Cellpose and therefore the plugin and napari can crash without warning in some c
 
     pip install torch==1.11.0
 
+## Known Issues
+
+The package numba sometimes doesn't work with the current numpy version. If so, please use
+
+    pip install numpy==1.21.4
 
 ## Contributing
 
