@@ -28,7 +28,6 @@ else:
 
 #filtering functions for cell analysis
 def getCells(labels):
-        """Runs the main program"""
         data = labels
         shape = data.shape #shape is in [z,y,x] form
 
@@ -341,6 +340,13 @@ def widget_wrapper():
         del CP
         return diam
     @thread_worker
+    def resize(labels):
+        """Return labels with cells on the border removed"""
+        ratio=[widget.pixelZ.value,widget.pixelY.value,widget.pixelX.value]
+        ratio=[float(i) for i in ratio]
+        labels.scale=[coord//float(widget.pixelX.value) for coord in ratio]
+        return labels.data
+    @thread_worker
     def delete_edge(labels):
         """Return labels with cells on the border removed"""
         return clear_border(labels)
@@ -494,6 +500,10 @@ def widget_wrapper():
         anisotropy = dict(widget_type='FloatSlider', name='anisotropy', value=1.0, min=1.0, max=10.0, step=0.2, tooltip='resolution ratio between z res to xy res'),
         min_size = dict(widget_type='Slider', name='min_size', value=15, min=15, max=1000, step=1, tooltip='minimum cell size threshold for cellpose'),
         compute_masks_button  = dict(widget_type='PushButton', text='recompute last masks with new cellprob + model match', enabled=False),
+        pixelX = dict(widget_type='LineEdit', label='pixelX', value=1, tooltip='approximate pixel width (in microns)'),
+        pixelY = dict(widget_type='LineEdit', label='pixelY', value=1, tooltip='approximate pixel height (in microns)'),
+        pixelZ = dict(widget_type='LineEdit', label='pixelZ', value=1, tooltip='approximate pixel depth (in microns)'),
+        resize_cells_button= dict(widget_type='PushButton', text='resize cells from image', tooltip='Resize cells from image'),
         process_3D = dict(widget_type='CheckBox', text='process stack as 3D', value=True, tooltip='use default 3D processing where flows in X, Y, and Z are computed and dynamics run in 3D to create masks'),
         clear_previous_segmentations = dict(widget_type='CheckBox', text='clear previous results', value=True),
         delete_edge_button = dict(widget_type='PushButton', text='delete edge cells from image', tooltip='Remove edge cells from image using specified channels'),
@@ -514,6 +524,10 @@ def widget_wrapper():
         anisotropy,
         min_size,
         compute_masks_button,
+        pixelX,
+        pixelY,
+        pixelZ,
+        resize_cells_button,
         process_3D,
         clear_previous_segmentations,
         delete_edge_button,
@@ -683,6 +697,13 @@ def widget_wrapper():
         diam_worker.start()
 
     # I wrote these functions, they connect the functions to the respective buttons
+    @widget.resize_cells_button.changed.connect
+    def _resize(e:Any):
+        image = widget.image_layer.value
+        resize_worker = resize(image)
+        resize_worker.returned.connect(update_layer)
+        resize_worker.start()
+
     @widget.delete_edge_button.changed.connect
     def _delete_edge(e:Any):
         image = widget.image_layer.value.data
