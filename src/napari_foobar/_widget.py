@@ -302,6 +302,7 @@ def widget_wrapper():
                     anisotropy,
                     min_size, do_3D):
         from cellpose import models
+        import tifffile as tiff
 
         flow_threshold = 0.4
         logger.debug(f'computing masks with flow_threshold={flow_threshold}')
@@ -328,6 +329,8 @@ def widget_wrapper():
         ## added here because i don't want to change too much of the original code
         masks=mergeCells(masks)
         masks=fill_holes(masks)
+        #save after merge
+        tiff.imwrite(widget.image_layer.value.name+"_cp_orig.tif",masks)
         return masks, flows_orig
 
     @thread_worker
