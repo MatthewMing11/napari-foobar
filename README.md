@@ -104,6 +104,8 @@ The package numba sometimes doesn't work with the current numpy version. If so, 
 
     pip install numpy==1.21.4
 
+### peak_local_max error
+peak_local_max will cause an error if you do not have the correct data type for the layer being relabeled for erosion and watershed. To change the data type, please right-click and select convert date type and change it to int64.
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
