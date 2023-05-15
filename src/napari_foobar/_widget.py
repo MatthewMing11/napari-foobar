@@ -326,11 +326,6 @@ def widget_wrapper():
                       flows_orig[3][:,i]] for i in range(masks.shape[0])]
             masks = list(masks)
             flows_orig = flows
-        ## added here because i don't want to change too much of the original code
-        masks=mergeCells(masks)
-        masks=fill_holes(masks)
-        #save after merge
-        tiff.imwrite(widget.image_layer.value.name+"_cp_orig.tif",masks)
         return masks, flows_orig
 
     @thread_worker
@@ -349,6 +344,16 @@ def widget_wrapper():
         ratio=[float(i) for i in ratio]
         labels.scale=[coord//float(widget.pixelX.value) for coord in ratio]
         return labels.data
+    @thread_worker
+    def merge(labels):
+        import tifffile as tiff
+        """Merges cells and saves them to a file"""
+        masks=mergeCells(labels)
+        masks=fill_holes(masks)
+        #save after merge
+        tiff.imwrite(widget.image_layer.value.name+"_cp_orig.tif",masks)
+        return masks
+    
     @thread_worker
     def delete_edge(labels):
         """Return labels with cells on the border removed"""
@@ -509,6 +514,7 @@ def widget_wrapper():
         resize_cells_button= dict(widget_type='PushButton', text='resize cells from image', tooltip='Resize cells from image'),
         process_3D = dict(widget_type='CheckBox', text='process stack as 3D', value=True, tooltip='use default 3D processing where flows in X, Y, and Z are computed and dynamics run in 3D to create masks'),
         clear_previous_segmentations = dict(widget_type='CheckBox', text='clear previous results', value=True),
+        merge_cells_button = dict(widget_type='PushButton', text='merge cells from image', tooltip='Merge cells from image using specified channels'),
         delete_edge_button = dict(widget_type='PushButton', text='delete edge cells from image', tooltip='Remove edge cells from image using specified channels'),
         isolate_button = dict(widget_type='PushButton', text='isolate cells from image', tooltip='Isolate cells from image using specified channels'),
         erode_button = dict(widget_type='PushButton', text='erode cells from image', tooltip='Erode cells from image using specified channels'),
@@ -533,6 +539,7 @@ def widget_wrapper():
         resize_cells_button,
         process_3D,
         clear_previous_segmentations,
+        merge_cells_button,
         delete_edge_button,
         isolate_button,
         erode_button,
@@ -706,6 +713,12 @@ def widget_wrapper():
         resize_worker = resize(image)
         resize_worker.returned.connect(update_layer)
         resize_worker.start()
+    @widget.merge_cells_button.changed.connect
+    def _merge(e:Any):
+        image = widget.image_layer.value
+        merge_worker = merge(image)
+        merge_worker.returned.connect(update_layer)
+        merge_worker.start()
 
     @widget.delete_edge_button.changed.connect
     def _delete_edge(e:Any):
