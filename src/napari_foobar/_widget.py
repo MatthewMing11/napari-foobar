@@ -475,7 +475,7 @@ def widget_wrapper():
     @thread_worker
     def prev(labels):
         """Moves to the previous largest cell"""
-        if not widget.current_index:
+        if widget.current_index:
             widget.current_index -= 1
         widget.label_layer.value.selected_label=widget.labeled_cells[widget.current_index]
         widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
