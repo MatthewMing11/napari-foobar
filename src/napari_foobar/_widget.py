@@ -715,7 +715,7 @@ def widget_wrapper():
         resize_worker.start()
     @widget.merge_cells_button.changed.connect
     def _merge(e:Any):
-        image = widget.image_layer.value
+        image = widget.image_layer.value.data
         merge_worker = merge(image)
         merge_worker.returned.connect(update_layer)
         merge_worker.start()
@@ -730,13 +730,14 @@ def widget_wrapper():
     @widget.isolate_button.changed.connect
     def _isolate(e:Any):
         image = widget.label_layer.value.data
+        scale = widget.label_layer.value.scale
         if not hasattr(widget, 'erode_count'):#it wasn't working on plugin startup so i'll just put it here and it works
             widget.erode_count = 0
         if not hasattr(widget, 'current_index'):
             widget.current_index = 0
         centers=isolate(image)#the only one without a worker because i need the cells to be labeled first
-        widget.viewer.value.add_labels(centers,name="centroids",blending="additive")
-        widget.viewer.value.add_labels(image,name="erosion_"+str(widget.erode_count))#this is the erosion layer
+        widget.viewer.value.add_labels(centers,name="centroids",blending="additive",scale=scale)
+        widget.viewer.value.add_labels(image,name="erosion_"+str(widget.erode_count),scale=scale)#this is the erosion layer
         widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[0]
         widget.viewer.value.layers["centroids"].show_selected_label=True
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].visible = False
