@@ -29,13 +29,11 @@ If you don't have mamba installed, replace mamba by conda.
     mamba create -n napari-plugin-env python=3.9 napari jupyterlab -c conda-forge
     mamba activate napari-plugin-env
 
-You can install `napari-foobar` via [pip]:
+To install mamba, go to mamba's read the docs page and follow the instructions under "Fresh install".
 
-    pip install napari-foobar
+You can install `napari-foobar` via [pip] locally. Navigate inside the napari-foobar folder and paste the command:
 
-To install latest development version :
-
-    pip install git+https://github.com/MatthewMing11/napari-foobar
+    pip install -e .
 
 
 ## Components
@@ -60,6 +58,14 @@ The amount of deformity on z compared to x and y on voxels used.
 
 The lower limit of cells allowed to be segmented. Anything lower is excluded from segmentation.
 
+### pixelX, pixelY, pixelZ
+
+The dimensions of the voxels
+
+### resize cells from image
+
+Resizes the cells so that they appear properly in the display.
+
 ### process stack as 3D
 
 Enable if using 3D stack otherwise disable.
@@ -67,6 +73,10 @@ Enable if using 3D stack otherwise disable.
 ### clear previous results
 
 Enable if newer cellpose results should replace old results.
+
+### merge cells from image
+
+(Optional) Merge undersegmented cells from image.
 
 ### delete edge cells from image
 
@@ -87,6 +97,14 @@ Watersheds selected cell.
 ### delete cells from image
 
 Deletes selected cell and moves to next cell on the list.
+
+### prev cell to relabel
+
+Move to the previous largest labeled cell.
+
+### nect cell to relabel
+
+Move to the next largest labeled cell.
 
 ### run segmentation
 
