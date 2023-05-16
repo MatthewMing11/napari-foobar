@@ -722,9 +722,9 @@ def widget_wrapper():
 
     @widget.delete_edge_button.changed.connect
     def _delete_edge(e:Any):
-        image = widget.image_layer.value.data
+        image = widget.label_layer.value.data
         delete_worker = delete_edge(image)
-        delete_worker.returned.connect(update_layer)
+        delete_worker.returned.connect(update_labels)
         delete_worker.start()
 
     @widget.isolate_button.changed.connect
