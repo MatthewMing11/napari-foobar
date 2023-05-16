@@ -29,7 +29,7 @@ If you don't have mamba installed, replace mamba by conda.
     mamba create -n napari-plugin-env python=3.9 napari jupyterlab -c conda-forge
     mamba activate napari-plugin-env
 
-To install mamba, go to mamba's read the docs page and follow the instructions under "Fresh install".
+To install mamba, go [here](https://mamba.readthedocs.io/en/latest/installation.html) and follow the instructions under "Fresh install".
 
 You can install `napari-foobar` via [pip] locally. Navigate inside the napari-foobar folder and paste the command:
 
