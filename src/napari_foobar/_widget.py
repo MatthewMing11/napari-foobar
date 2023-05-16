@@ -71,9 +71,9 @@ def mergeCells(labels):
     # array=[]
     im2=np.copy(orig)
     for index in range(len(orig)): #go through all slices
-        print("Index")
-        print(index)
-        print(f'dtype: {orig.dtype}, shape: {orig.shape}, min: {np.min(orig)}, max: {np.max(orig)}')#check contents of file(not metadata)
+        # print("Index")
+        # print(index)
+        # print(f'dtype: {orig.dtype}, shape: {orig.shape}, min: {np.min(orig)}, max: {np.max(orig)}')#check contents of file(not metadata)
         # print(orig[0,:,:].shape)
         # slice=orig[130,:,:]#take 130th slice of the image(testing purposes)
         slice=im2[index,:,:]
@@ -135,12 +135,12 @@ def mergeCells(labels):
 
         # # listofContours=np.array(listofContours)
         # # listofContours = listofContours.astype('int32')
-        print(listofContours)
+        # print(listofContours)
         # #need to make list of Contours look like contours
         # # so far the numpy appending is messing up everything, need to figure out why
-        print("Real")
-        print(contours)
-        print(grad)
+        # print("Real")
+        # print(contours)
+        # print(grad)
         #Go through all contours in list and merge neighboring cells.
         # im2=np.copy(slice)
         for i in listofContours:
@@ -168,9 +168,9 @@ def mergeCells(labels):
                         replace=unique_neighbors[0]
                         for unique_neighbor in unique_neighbors[1:]:
                             if unique_neighbor in im2:#hopefully this speeds up computation
-                                print("Executed")
+                                # print("Executed")
                                 im2=np.where(im2==unique_neighbor,replace,im2)
-                                print("Done")
+                                # print("Done")
     return im2
 # Python3 implementation of the approach
  
@@ -248,7 +248,7 @@ def fill_holes(labels):
     im2=np.copy(im)
     h, w = im2.shape[1:]
     for index in range(len(im2)):
-        print(index)
+        # print(index)
         for i in range(h):
             if im2[index][0,i]==0: floodFill(im2[index],w,h,0,i,0,127)
             if im2[index][w-1,i]==0: floodFill(im2[index],w,h,w-1,i,0,127)
@@ -257,7 +257,7 @@ def fill_holes(labels):
             if im2[index][i,h-1]==0: floodFill(im2[index],w,h,i,h-1,0,127)
         n=h*w
         for i in range(n):
-            print(i/w)
+            # print(i/w)
             if im2[index][int(i/w)][i%w]==127:
                 im2[index][int(i/w)][i%w]=0
             else:
@@ -405,12 +405,12 @@ def widget_wrapper():
         # tiff.imwrite("answer.tif",output,bigtiff=True)
         cells=getCells(output)
         new_centers=generate_centers(cells)
-        print(len(cells))
+        # print(len(cells))
         blank=np.zeros(labels.shape)
         for key, value in new_centers.items():
             z,y,x=value
-            print("CENTER")
-            print(value)
+            # print("CENTER")
+            # print(value)
             for i in range(-1,2):#not sure if this is slow or not
                 for j in range(-1,2):
                     for k in range(-1,2):
@@ -421,7 +421,7 @@ def widget_wrapper():
         other_centers=np.where(all_centers==widget.labeled_cells[widget.current_index],0,all_centers)
         blank=np.where(blank!=0,widget.labeled_cells[widget.current_index],blank)
         blank=blank+other_centers
-        print("Erosion done")
+        # print("Erosion done")
         return (labels_eroded+other_labels).astype(labels.dtype),blank.astype(labels.dtype)
 
     # @thread_worker
