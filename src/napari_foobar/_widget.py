@@ -766,7 +766,7 @@ def widget_wrapper():
         delete_worker.returned.connect(update_labels)
         delete_worker.start()   
 
-    @widget.next_button.changed.connect
+    @widget.prev_button.changed.connect
     def _prev(e:Any):
         image = widget.label_layer.value.data
         prev_worker = prev(image)
