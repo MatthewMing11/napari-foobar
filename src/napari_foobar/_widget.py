@@ -146,7 +146,8 @@ def mergeCells(labels):
         for i in listofContours:
             for j in i:
                 for k in j:
-                    arr=k.tolist()
+                    # arr=k.tolist()
+                    arr=k
                     x=arr[0]
                     y=arr[1]
                     roi = slice[y-1:y+2, x-1:x+2].copy()
