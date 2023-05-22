@@ -13,6 +13,10 @@ A simple plugin to use FooBar segmentation within napari
 
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
 
+
+https://github.com/MatthewMing11/napari-foobar/assets/50256336/85b07c8b-cb44-42c1-bdbd-05c74ea93c8a
+
+
 <!--
 Don't miss the full getting started guide to set up your new package:
 https://github.com/napari/cookiecutter-napari-plugin#getting-started
