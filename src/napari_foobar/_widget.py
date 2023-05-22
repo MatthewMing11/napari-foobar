@@ -718,7 +718,7 @@ def widget_wrapper():
         resize_worker.start()
     @widget.merge_cells_button.changed.connect
     def _merge(e:Any):
-        image = widget.image_layer.value.data
+        image = widget.label_layer.value.data
         merge_worker = merge(image)
         merge_worker.returned.connect(update_layer)
         merge_worker.start()
