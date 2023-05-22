@@ -99,7 +99,8 @@ def mergeCells(labels):
         # Iterating over each pixel except those at the boundary
         print(contours)
         contours = np.vstack(contours).squeeze()
-        contours=np.asarray(contours).tolist()
+        contours=np.asarray(contours).tolist()#it used to be just this line, but seems my contours is unpacking too much
+        contours=[contours]
         listofContours=[]
         #Remake im with only inner contours in new variable edges. Record this list of contours for visualization later.
         edge = np.zeros(im.shape, dtype = np.uint8)
