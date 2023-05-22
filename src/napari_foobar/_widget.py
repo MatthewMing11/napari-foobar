@@ -448,6 +448,7 @@ def widget_wrapper():
         print(output+other_labels)
         output=np.where(output==0,0,output+cell_max)+other_labels
         isolate(output)
+        widget.viewer.value.layers["centroids"].selected_label=widget.labeled_cells[widget.current_index]
         widget.viewer.value.layers["erosion_"+str(widget.erode_count)].name = "erosion_0"
         widget.erode_count = 0
         return output
