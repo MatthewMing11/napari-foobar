@@ -128,6 +128,8 @@ The package numba sometimes doesn't work with the current numpy version. If so, 
 
 ### peak_local_max error
 peak_local_max will cause an error if you do not have the correct data type for the layer being relabeled for erosion and watershed. To change the data type, please right-click and select convert date type and change it to int64.
+### index error when using erode,watershed,delete
+this error is caused because the colors are not updated when new labels are made. This is resolved by clicking the show selected checkbox on and off to recalibrate the colors so that the new labels have colors.
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
