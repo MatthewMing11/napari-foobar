@@ -97,6 +97,7 @@ def mergeCells(labels):
         # I am taking only those contours which do not have a child contour.
         # finalContours = np.asarray([contours[i] for i in range(len(contours)) if hierarchy[0][i][2] == -1])
         # Iterating over each pixel except those at the boundary
+        print(contours)
         contours=[np.asarray(contours)]
         listofContours=[]
         #Remake im with only inner contours in new variable edges. Record this list of contours for visualization later.
