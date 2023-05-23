@@ -450,7 +450,7 @@ def widget_wrapper():
         mask = np.zeros(dist.shape, dtype=bool)
         mask[tuple(coords.T)] = True
         markers, _ = ndi.label(mask,structure=ndi.generate_binary_structure(3, 3))#3d-image(26) connectivity
-        output=segmentation.watershed(-dist,markers=markers,mask=labels_eroded)
+        output=segmentation.watershed(-dist,markers=markers,mask=label_isolated)
         # tiff.imwrite("answer.tif",np.where(output==0,0,output+cell_max)+other_labels,bigtiff=True)
         print(output+other_labels)
         output=np.where(output==0,0,output+cell_max)+other_labels
