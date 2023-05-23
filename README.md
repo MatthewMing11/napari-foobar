@@ -35,6 +35,14 @@ If you don't have mamba installed, replace mamba by conda.
 
 To install mamba, go [here](https://mamba.readthedocs.io/en/latest/installation.html) and follow the instructions under "Fresh install".
 
+Mamba has been shown to run significantly faster than running with conda, so consider using Mamba.
+
+Then do
+
+    git clone https://github.com/MatthewMing11/napari-foobar.git
+
+Make sure you know where you downloaded the project as you will need to install it locally.
+
 You can install `napari-foobar` via [pip] locally. Navigate inside the napari-foobar folder and paste the command:
 
     pip install -e .
