@@ -353,7 +353,7 @@ def widget_wrapper():
         import tifffile as tiff
         """Merges cells and saves them to a file"""
         masks=mergeCells(labels)
-        masks=fill_holes(masks)
+        # masks=fill_holes(masks)
         #save after merge
         tiff.imwrite(widget.image_layer.value.name+"_cp_orig.tif",masks)
         return masks
