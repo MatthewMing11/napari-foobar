@@ -147,7 +147,7 @@ def mergeCells(labels):
         # print(grad)
         #Go through all contours in list and merge neighboring cells.
         # im2=np.copy(slice)
-        for i in listofContours:
+        for i in listofContours:#it was i,j,k because i used the same loop as contours but now its shorter
             for j in i:
                 for k in j:
                     arr=k.tolist()

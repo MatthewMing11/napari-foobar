@@ -126,6 +126,11 @@ The package numba sometimes doesn't work with the current numpy version. If so, 
 
     pip install numpy==1.21.4
 
+### typeerror
+Because of a recent change to update everything in napari, there will be a typeerror: issubclass() arg 1 must be a class. To resolve this, please use
+
+    pip install typing-extensions==4.5.0
+
 ### peak_local_max error
 peak_local_max will cause an error if you do not have the correct data type for the layer being relabeled for erosion and watershed. To change the data type, please right-click and select convert date type and change it to int64.
 ### index error when using erode,watershed,delete
