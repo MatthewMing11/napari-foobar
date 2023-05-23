@@ -431,22 +431,26 @@ def widget_wrapper():
     # @thread_worker
     def watershed(labels):
         """Applies watershed to current cell on screen. Once applied, moves to the next largest cell."""
+        import cv2 as cv
         from skimage import (
         measure,segmentation,
         )
         import tifffile as tiff
         from scipy import ndimage as ndi
         from skimage.feature import peak_local_max
-        """Takes a labeled image and finds peaks. Using these peaks, it """
+        """Takes a labeled image and finds peaks. Using these peaks, it finds regions"""
+
+        kernel = np.ones((3, 3), np.uint8)
         label_isolated=np.where(labels==widget.labeled_cells[widget.current_index],labels,0)
+        labels_eroded=cv.erode(np.float32(label_isolated),kernel,iterations=widget.erode_count)
         other_labels=np.where(labels!=widget.labeled_cells[widget.current_index],labels,0)
         cell_max=max(widget.labeled_cells)
-        dist = ndi.distance_transform_edt(label_isolated) #make distance map
-        coords = peak_local_max(dist,footprint=np.ones((50, 50,50)),labels=label_isolated)
+        dist = ndi.distance_transform_edt(labels_eroded) #make distance map
+        coords = peak_local_max(dist,footprint=np.ones((50, 50,50)),labels=labels_eroded.astype('int32'))
         mask = np.zeros(dist.shape, dtype=bool)
         mask[tuple(coords.T)] = True
         markers, _ = ndi.label(mask,structure=ndi.generate_binary_structure(3, 3))#3d-image(26) connectivity
-        output=segmentation.watershed(-dist,markers=markers,mask=label_isolated)
+        output=segmentation.watershed(-dist,markers=markers,mask=labels_eroded)
         # tiff.imwrite("answer.tif",np.where(output==0,0,output+cell_max)+other_labels,bigtiff=True)
         print(output+other_labels)
         output=np.where(output==0,0,output+cell_max)+other_labels
