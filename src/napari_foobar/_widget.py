@@ -105,33 +105,33 @@ def mergeCells(labels):
         edge = np.zeros(im.shape, dtype = np.uint8)
         for i in contours:
             row=[]
-            for j in i:
-                for k in j:
+            # for j in i:
+            #     for k in j:
                     # arr=k.tolist()
-                    arr=k
-                    x=arr[0]
-                    y=arr[1]
-                    if x>0 and x<h and y>1 and y<w:# check if within bounds of image
-                        roi = slice[y-1:y+2, x-1:x+2].copy()
-                        roi2=np.array([])
-                        roi3=np.array([])
-                        if np.any(prevslice):
-                            roi2 = prevslice[y-1:y+2, x-1:x+2].copy()
-                        if np.any(nextslice):
-                            roi3 = nextslice[y-1:y+2, x-1:x+2].copy()
-                        roi[1,1]=0
-                        # print("ROI HERE")
-                        # print(roi)
-                        unique_neighbors=set(np.concatenate((roi.flatten(),roi2.flatten(),roi3.flatten())))
-                        # print(unique_neighbors)
-                        #keep all non-zero values
-                        if 0 in unique_neighbors:
-                            unique_neighbors.remove(0)
-                        # if contour pixel only borders one cell(itself), remove it
-                        # print(unique_neighbors)
-                        if len(unique_neighbors)>1:
-                            row.append([arr])
-                            edge[y][x] = 255
+            arr=i
+            x=arr[0]
+            y=arr[1]
+            if x>0 and x<h and y>1 and y<w:# check if within bounds of image
+                roi = slice[y-1:y+2, x-1:x+2].copy()
+                roi2=np.array([])
+                roi3=np.array([])
+                if np.any(prevslice):
+                    roi2 = prevslice[y-1:y+2, x-1:x+2].copy()
+                if np.any(nextslice):
+                    roi3 = nextslice[y-1:y+2, x-1:x+2].copy()
+                roi[1,1]=0
+                # print("ROI HERE")
+                # print(roi)
+                unique_neighbors=set(np.concatenate((roi.flatten(),roi2.flatten(),roi3.flatten())))
+                # print(unique_neighbors)
+                #keep all non-zero values
+                if 0 in unique_neighbors:
+                    unique_neighbors.remove(0)
+                # if contour pixel only borders one cell(itself), remove it
+                # print(unique_neighbors)
+                if len(unique_neighbors)>1:
+                    row.append([arr])
+                    edge[y][x] = 255
             if len(row)!=0:
                 row=np.asarray(row,dtype=np.int32)
                 listofContours.append(row)
