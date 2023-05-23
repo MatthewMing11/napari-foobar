@@ -442,7 +442,7 @@ def widget_wrapper():
         other_labels=np.where(labels!=widget.labeled_cells[widget.current_index],labels,0)
         cell_max=max(widget.labeled_cells)
         dist = ndi.distance_transform_edt(label_isolated) #make distance map
-        coords = peak_local_max(dist, labels=label_isolated)
+        coords = peak_local_max(dist,footprint=np.ones((50, 50,50)),labels=label_isolated)
         mask = np.zeros(dist.shape, dtype=bool)
         mask[tuple(coords.T)] = True
         markers, _ = ndi.label(mask,structure=ndi.generate_binary_structure(3, 3))#3d-image(26) connectivity
