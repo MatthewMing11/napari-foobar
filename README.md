@@ -14,7 +14,7 @@ A simple plugin to use FooBar segmentation within napari
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
 
 
-https://github.com/MatthewMing11/napari-foobar/assets/50256336/85b07c8b-cb44-42c1-bdbd-05c74ea93c8a
+https://github.com/MatthewMing11/napari-foobar/assets/50256336/8c054b57-ff9c-44ad-85d9-e85859c6cc42
 
 
 <!--
@@ -34,6 +34,14 @@ If you don't have mamba installed, replace mamba by conda.
     mamba activate napari-plugin-env
 
 To install mamba, go [here](https://mamba.readthedocs.io/en/latest/installation.html) and follow the instructions under "Fresh install".
+
+Mamba has been shown to run significantly faster than running with conda, so consider using Mamba.
+
+Then do
+
+    git clone https://github.com/MatthewMing11/napari-foobar.git
+
+Make sure you know where you downloaded the project as you will need to install it locally.
 
 You can install `napari-foobar` via [pip] locally. Navigate inside the napari-foobar folder and paste the command:
 
@@ -127,7 +135,7 @@ The package numba sometimes doesn't work with the current numpy version. If so, 
     pip install numpy==1.21.4
 
 ### typeerror
-Because of a recent change to update everything in napari, there will be a typeerror: issubclass() arg 1 must be a class. To resolve this, please use
+Because of a recent change to update everything in napari, there will be a "typeerror: issubclass() arg 1 must be a class" error. To resolve this, please use
 
     pip install typing-extensions==4.5.0
 
