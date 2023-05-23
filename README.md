@@ -135,7 +135,7 @@ The package numba sometimes doesn't work with the current numpy version. If so, 
     pip install numpy==1.21.4
 
 ### typeerror
-Because of a recent change to update everything in napari, there will be a typeerror: issubclass() arg 1 must be a class. To resolve this, please use
+Because of a recent change to update everything in napari, there will be a "typeerror: issubclass() arg 1 must be a class" error. To resolve this, please use
 
     pip install typing-extensions==4.5.0
 
