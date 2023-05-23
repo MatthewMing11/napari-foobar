@@ -14,9 +14,7 @@ A simple plugin to use FooBar segmentation within napari
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
 
 
-<video controls="" width="800" height="500" muted="" loop="" autoplay="">
-<source src="https://github.com/MatthewMing11/napari-foobar/blob/main/installation_jnX69dlM.mp4" type="video/mp4">
-</video>
+https://github.com/MatthewMing11/napari-foobar/assets/50256336/8c054b57-ff9c-44ad-85d9-e85859c6cc42
 
 
 <!--
