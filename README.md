@@ -47,6 +47,9 @@ You can install `napari-foobar` via [pip] locally. Navigate inside the napari-fo
 
     pip install -e .
 
+When making updates/receiving updates, make sure to 
+    pip install -e .
+so that all files are updated on plugin.
 
 ## Components
 ![](https://github.com/MatthewMing11/napari-foobar/blob/main/record.gif)
