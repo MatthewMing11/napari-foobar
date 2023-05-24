@@ -48,7 +48,9 @@ You can install `napari-foobar` via [pip] locally. Navigate inside the napari-fo
     pip install -e .
 
 When making updates/receiving updates, make sure to 
+
     pip install -e .
+
 so that all files are updated on plugin.
 
 ## Components
@@ -151,7 +153,9 @@ This error is caused because the colors are not updated when new labels are made
 ## Resources/Links
 
 [napari](https://napari.org/stable/)
+
 [Code for binary fill algorithm](https://github.com/imagej/ImageJ/blob/master/ij/plugin/filter/Binary.java)
+
 [cellpose plugin base](https://github.com/MouseLand/cellpose-napari)
 
 ## Contributing
