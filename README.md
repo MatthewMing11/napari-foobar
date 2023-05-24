@@ -117,7 +117,7 @@ Deletes selected cell and moves to next cell on the list. (only works on label s
 
 Move to the previous largest labeled cell. (only works on label selected on label_layer)
 
-### nect cell to relabel
+### next cell to relabel
 
 Move to the next largest labeled cell. (only works on label selected on label_layer)
 
