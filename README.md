@@ -76,7 +76,7 @@ The dimensions of the voxels
 
 ### resize cells from image
 
-Resizes the cells so that they appear properly in the display.
+Resizes the cells so that they appear properly in the display.(Will only modify image selected in image_layer so if you have a labeled layer, change it to an image layer,select it under image_layer and process it with this button. Then convert it back to a label.)
 
 ### process stack as 3D
 
@@ -88,35 +88,35 @@ Enable if newer cellpose results should replace old results.
 
 ### merge cells from image
 
-(Optional) Merge undersegmented cells from image.
+(Optional) Merge undersegmented cells from image. (only works on label selected on label_layer)
 
 ### delete edge cells from image
 
-Click to remove all cells on the border.
+Click to remove all cells on the border.(only works on label selected on label_layer)
 
 ### isolate cells from image
 
-When starting to relabel, click this to setup as well as isolate the largest cell.
+When starting to relabel, click this to setup as well as isolate the largest cell. (only works on label selected on label_layer)
 
 ### erode cells from image
 
-Erodes selected cell.
+Erodes selected cell. (only works on label selected on label_layer)
 
 ### watershed cells from image.
 
-Watersheds selected cell.
+Watersheds selected cell. (only works on label selected on label_layer)
 
 ### delete cells from image
 
-Deletes selected cell and moves to next cell on the list.
+Deletes selected cell and moves to next cell on the list. (only works on label selected on label_layer)
 
 ### prev cell to relabel
 
-Move to the previous largest labeled cell.
+Move to the previous largest labeled cell. (only works on label selected on label_layer)
 
 ### nect cell to relabel
 
-Move to the next largest labeled cell.
+Move to the next largest labeled cell. (only works on label selected on label_layer)
 
 ### run segmentation
 
