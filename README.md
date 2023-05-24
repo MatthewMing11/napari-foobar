@@ -158,6 +158,8 @@ This error is caused because the colors are not updated when new labels are made
 
 [cellpose plugin base](https://github.com/MouseLand/cellpose-napari)
 
+For any issues with napari, peruse the image.sc forums
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
