@@ -51,7 +51,7 @@ When making updates/receiving updates, make sure to
 
     pip install -e .
 
-so that all files are updated on plugin.
+so that all files are updated on the plugin.
 
 ## Components
 ![](https://github.com/MatthewMing11/napari-foobar/blob/main/record.gif)
