@@ -141,8 +141,16 @@ Because of a recent change to update everything in napari, there will be a "type
 
 ### peak_local_max error
 peak_local_max will cause an error if you do not have the correct data type for the layer being relabeled for erosion and watershed. To change the data type, please right-click and select convert date type and change it to int64.
+
 ### index error when using erode,watershed,delete
 This error is caused because the colors are not updated when new labels are made. This is resolved by clicking the show selected checkbox on and off to recalibrate the colors so that the new labels have colors.
+
+## Resources/Links
+
+[napari](https://napari.org/stable/)
+[Code for binary fill algorithm](https://github.com/imagej/ImageJ/blob/master/ij/plugin/filter/Binary.java)
+[cellpose plugin base](https://github.com/MouseLand/cellpose-napari)
+
 ## Contributing
 
 Contributions are very welcome. Tests can be run with [tox], please ensure
