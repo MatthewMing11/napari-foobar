@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/githubuser/napari-foobar/branch/main/graph/badge.svg)](https://codecov.io/gh/githubuser/napari-foobar)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-foobar)](https://napari-hub.org/plugins/napari-foobar)
 
-A simple plugin to use FooBar segmentation within napari
+A simple plugin to use Cellpose segmentation within napari
 
 ----------------------------------
 
