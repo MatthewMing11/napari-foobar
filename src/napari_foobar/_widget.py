@@ -322,6 +322,19 @@ def widget_wrapper():
                                     anisotropy=anisotropy,
                                     min_size=min_size,
                                     stitch_threshold=0)
+        masks=np.where(masks!=0,1,0)
+        masks=fill_holes(masks)
+        masks, flows_orig, _ = CP.eval(masks, 
+                                    channels=channels, 
+                                    channel_axis=channel_axis,
+                                    diameter=diameter,
+                                    net_avg=net_avg,
+                                    resample=resample,
+                                    flow_threshold=flow_threshold,
+                                    do_3D=do_3D,
+                                    anisotropy=anisotropy,
+                                    min_size=min_size,
+                                    stitch_threshold=0)
         del CP
         if not do_3D and masks.ndim > 2:
             flows = [[flows_orig[0][i], 
@@ -643,19 +656,7 @@ def widget_wrapper():
         elif image_layer.rgb:
             widget.channel_axis = -1
 
-        masks, flows_orig= run_cellpose(image=image,
-                                model_type='nuclei',
-                                channels=[0, 0],
-                                channel_axis=widget.channel_axis, 
-                                diameter=float(diameter),
-                                net_avg=True,
-                                resample=False,
-                                anisotropy=anisotropy,
-                                min_size=min_size,
-                                do_3D=(process_3D and image_layer.ndim>2),)
-        masks=np.where(masks!=0,1,0)
-        masks=fill_holes(masks)
-        cp_worker = run_cellpose(image=masks,
+        cp_worker = run_cellpose(image=image,
                                 model_type='nuclei',
                                 channels=[0, 0],
                                 channel_axis=widget.channel_axis, 
