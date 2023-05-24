@@ -643,7 +643,19 @@ def widget_wrapper():
         elif image_layer.rgb:
             widget.channel_axis = -1
 
-        cp_worker = run_cellpose(image=image,
+        masks, flows_orig= run_cellpose(image=image,
+                                model_type='nuclei',
+                                channels=[0, 0],
+                                channel_axis=widget.channel_axis, 
+                                diameter=float(diameter),
+                                net_avg=True,
+                                resample=False,
+                                anisotropy=anisotropy,
+                                min_size=min_size,
+                                do_3D=(process_3D and image_layer.ndim>2),)
+        masks=np.where(masks!=0,1,0)
+        masks=fill_holes(masks)
+        cp_worker = run_cellpose(image=masks,
                                 model_type='nuclei',
                                 channels=[0, 0],
                                 channel_axis=widget.channel_axis, 
