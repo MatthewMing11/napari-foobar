@@ -99,7 +99,7 @@ Click to remove all cells on the border.(only works on label selected on label_l
 
 ### isolate cells from image
 
-When starting to relabel, click this to setup as well as isolate the largest cell. (only works on label selected on label_layer)
+When starting to relabel, click this to setup as well as isolate the largest cell. (only works on label selected on label_layer). Make sure to press the square icon located on the lower left corner of napari before isolating so that isolation is done in 3D as it is 2D by default. 
 
 ### erode cells from image
 
