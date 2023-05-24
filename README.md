@@ -49,7 +49,7 @@ You can install `napari-foobar` via [pip] locally. Navigate inside the napari-fo
 
 
 ## Components
-
+![](https://github.com/MatthewMing11/napari-foobar/blob/main/record.gif)
 ### image_layer
 
 Requires a valid image layer to use cellpose features. Not required if not doing segmentation.
